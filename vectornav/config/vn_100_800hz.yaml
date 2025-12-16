@@ -34,7 +34,7 @@ vectornav:
     # Binary output register 1
     BO1:
       asyncMode: 1                   # send only on port 1 to save serial bandwidth
-      rateDivisor: 1                 # 800 Hz
+      rateDivisor: 2                 # 400 Hz (800/2)
       #
       # TimeStartup
       # bit name         meaning
@@ -64,7 +64,7 @@ vectornav:
       # python code: convert to hex via:  hex(int("0001000000001", 2)) -> 0x201
       #
       # commonField: 0x7FFF          # cannot request all fields at full frequency
-      commonField: 0x201             # ask for only bare bones IMU data
+      commonField: 0x7F1D             # Full feature set
       timeField: 0x0000              # TIMEGROUP_NONE
       imuField: 0x0000               # IMUGROUP_NONE
       # set gpsField directly in source to enforce or condition
