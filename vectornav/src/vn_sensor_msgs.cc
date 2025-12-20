@@ -92,6 +92,7 @@ VnSensorMsgs::VnSensorMsgs(const rclcpp::NodeOptions & options) : Node("vn_senso
 
   //enu frame option
   use_enu = get_parameter("use_enu").as_bool();
+  RCLCPP_INFO(get_logger(), "use_enu = %s", use_enu ? "true" : "false");
 }
 
 
