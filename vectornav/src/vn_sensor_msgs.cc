@@ -141,16 +141,9 @@ static void convert_orientation_to_flu(const geometry_msgs::msg::Quaternion & q_
   tf2::Quaternion q_frd2ned;
   tf2::fromMsg(q_msg_frd2ned, q_frd2ned);
 
-  tf2::Quaternion q_frd_corrected(
-        q_frd2ned.x(),
-        q_frd2ned.y(),
-        -q_frd2ned.z(),
-        q_frd2ned.w()
-    );
-
   // 4. Chain Rule: World_Fix * Current_Orientation * Body_Fix
   // (Base_Link->ENU) = (NED->ENU) * (FRD->NED) * (FLU->FRD)
-  tf2::Quaternion q_flu2enu = q_ned2enu * q_frd_corrected * q_flu2frd;
+  tf2::Quaternion q_flu2enu = q_ned2enu * q_frd2ned * q_flu2frd;
   
   q_msg_flu2enu = tf2::toMsg(q_flu2enu);
 }
