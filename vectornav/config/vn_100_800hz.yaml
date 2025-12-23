@@ -34,7 +34,7 @@ vectornav:
     # Binary output register 1
     BO1:
       asyncMode: 1                   # send only on port 1 to save serial bandwidth
-      rateDivisor: 1                 # 800 Hz (800/1)
+      rateDivisor: 8                 # 800 Hz (800/1)
       #
       # TimeStartup
       # bit name         meaning
@@ -100,15 +100,24 @@ vectornav:
 vn_sensor_msgs:
   ros__parameters:
     use_enu: true  # this will convert from Forward-Right-Down body axes in NED to Right-Forward-Up body axes in ENU
-    orientation_covariance: [3.05e-4,  0.0,   0.0,
-                            0.0,   3.05e-4,  0.0,
-                            0.0,   0.0,   1.22e-3]
-    angular_velocity_covariance: [1.0e-6,  0.0,   0.0,
-                         0.0,   1.0e-6,  0.0,
-                         0.0,   0.0,   1.0e-6]
-    linear_acceleration_covariance: [0.1,  0.0,   0.0,
-                         0.0,   0.1,  0.0,
-                         0.0,   0.0,   0.1]
+    orientation_covariance: [0.01,  0.0,   0.0,
+                            0.0,   0.01,  0.0,
+                            0.0,   0.0,   0.01]
+    angular_velocity_covariance: [0.01,  0.0,   0.0,
+                         0.0,   0.01,  0.0,
+                         0.0,   0.0,   0.01]
+    linear_acceleration_covariance: [0.01,  0.0,   0.0,
+                         0.0,   0.01,  0.0,
+                         0.0,   0.0,   0.01]
+    # orientation_covariance: [3.05e-4,  0.0,   0.0,
+    #                         0.0,   3.05e-4,  0.0,
+    #                         0.0,   0.0,   1.22e-3]
+    # angular_velocity_covariance: [1.0e-6,  0.0,   0.0,
+    #                      0.0,   1.0e-6,  0.0,
+    #                      0.0,   0.0,   1.0e-6]
+    # linear_acceleration_covariance: [0.1,  0.0,   0.0,
+    #                      0.0,   0.1,  0.0,
+    #                      0.0,   0.0,   0.1]
     magnetic_covariance: [0.01,  0.0,   0.0,
                          0.0,   0.01,  0.0,
                          0.0,   0.0,   0.01]

@@ -115,6 +115,40 @@ static void convert_to_enu(const geometry_msgs::msg::Quaternion & q_msg_frd2ned,
   q_msg_rfu2enu = tf2::toMsg(q_rfu2enu);
 }
 
+static void convert_vec_frd_to_flu(const geometry_msgs::msg::Vector3 & vec_frd, geometry_msgs::msg::Vector3 & vec_flu)
+{
+  // FRD to FLU:
+  // Forward (X) -> Forward (X)
+  // Right   (Y) -> Left    (-Y)
+  // Down    (Z) -> Up      (-Z)
+  
+  vec_flu.x = vec_frd.x;
+  vec_flu.y = -vec_frd.y;
+  vec_flu.z = -vec_frd.z;
+}
+
+static void convert_orientation_to_flu(const geometry_msgs::msg::Quaternion & q_msg_frd2ned, geometry_msgs::msg::Quaternion & q_msg_flu2enu)
+{
+  // 1. World Frame Fix: NED (North-East-Down) -> ENU (East-North-Up)
+  // Rotation: 180 degrees about the X=Y diagonal (1,1,0)
+  static const tf2::Quaternion q_ned2enu(tf2::Vector3(1, 1, 0).normalized(), M_PI);
+
+  // 2. Body Frame Fix: FLU (Forward-Left-Up) -> FRD (Forward-Right-Down)
+  // Rotation: 180 degrees about the X-axis (Roll)
+  // This keeps X (Forward) aligned, but swaps Left/Up to Right/Down.
+  static const tf2::Quaternion q_flu2frd(tf2::Vector3(1, 0, 0), M_PI);
+
+  // 3. Current IMU Orientation: FRD body in NED world
+  tf2::Quaternion q_frd2ned;
+  tf2::fromMsg(q_msg_frd2ned, q_frd2ned);
+
+  // 4. Chain Rule: World_Fix * Current_Orientation * Body_Fix
+  // (Base_Link->ENU) = (NED->ENU) * (FRD->NED) * (FLU->FRD)
+  tf2::Quaternion q_flu2enu = q_ned2enu * q_frd2ned * q_flu2frd;
+  
+  q_msg_flu2enu = tf2::toMsg(q_flu2enu);
+}
+
 /** Convert VN common group data to ROS2 standard message types
    *
    */
@@ -181,9 +215,9 @@ void VnSensorMsgs::sub_vn_common(const vectornav_msgs::msg::CommonGroup::SharedP
     msg.header.frame_id = "auv/imu_link";
 
     if (use_enu) {
-      convert_vec_frd_to_rfu(msg_in->angularrate, msg.angular_velocity);
-      convert_vec_frd_to_rfu(msg_in->accel, msg.linear_acceleration);
-      convert_to_enu(msg_in->quaternion, msg.orientation);
+      convert_vec_frd_to_flu(msg_in->angularrate, msg.angular_velocity);
+      convert_vec_frd_to_flu(msg_in->accel, msg.linear_acceleration);
+      convert_orientation_to_flu(msg_in->quaternion, msg.orientation);
     } else {
       msg.angular_velocity = msg_in->angularrate;
       msg.linear_acceleration = msg_in->accel;
