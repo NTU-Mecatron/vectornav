@@ -212,7 +212,6 @@ void VnSensorMsgs::sub_vn_common(const vectornav_msgs::msg::CommonGroup::SharedP
   {
     sensor_msgs::msg::Imu msg;
     msg.header = msg_in->header;
-    msg.header.frame_id = "auv/imu_link";
 
     if (use_enu) {
       convert_vec_frd_to_flu(msg_in->angularrate, msg.angular_velocity);
