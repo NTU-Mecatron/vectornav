@@ -1,13 +1,20 @@
-vectornav:
+#
+# example configuration file for VN 100 via USB link
+#
+
+/**/vectornav:
   ros__parameters:
     port: "/dev/ttyUSB0"
-    baud: 115200
+    baud: 921600
+    adjust_ros_timestamp: True
     reconnect_ms: 500
     # Reference vnproglib-1.2.0.0 headers for enum definitions
     # Async Output Type (ASCII)
+    # leave this at zero to select binary format
     AsyncDataOutputType: 0           # VNOFF
     # Async output Frequency (Hz)
-    AsyncDataOutputFrequency: 200
+    # Not sure why this has to be 1Hz to make it work. Very strange.
+    AsyncDataOutputFrequency: 1
     # Sync control
     syncInMode: 3                    # SYNCINMODE_COUNT
     syncInEdge: 0                    # SYNCINEDGE_RISING
@@ -26,11 +33,42 @@ vectornav:
     errorMode: 1                     # ERRORMODE_SEND
     # Binary output register 1
     BO1:
-      asyncMode: 3                   # ASYNCMODE_BOTH
-      rateDivisor: 40                # 20 Hz
-      commonField: 0x7FFF
+      asyncMode: 1                   # send only on port 1 to save serial bandwidth
+      rateDivisor: 20                 # 40 Hz (800/20)
+      #
+      # TimeStartup
+      # bit name         meaning
+      # 0   TimeStartup  Time since startup.
+      # 1   Reserved     Reserved. Not used on this product.
+      # 2   TimeSyncIn   Time since last SyncIn trigger.
+      # 3   Ypr          Estimated attitude as yaw pitch and roll angles.
+      # 4   Qtn          Estimated attitude as a quaternion.
+      # 5   AngularRate  Compensated angular rate.
+      # 6   Reserved     Reserved. Not used on this product.
+      # 7   Reserved     Reserved. Not used on this product.
+      # 8   Accel        Estimated acceleration (compensated). (Body)
+      # 9   Imu          Calibrated uncompensated gyro and accelerometer measurements.
+      # 10  MagPres      Calibrated magnetic (compensated), temperature, and pressure measurements.
+      # 11  DeltaTheta   Delta time, theta, and velocity.
+      # 12  AhrsStatus
+      # 13  SyncInCnt
+      # 14  Reserved
+      # 15  Resv
+      #
+      # To get just the calibrated but otherwise uncompensated imu measurements, use these
+      # flags:
+      # bit: 111
+      #      2109876543210
+      #   s="0001000000001" (switch on bits 0 and 9 only)
+      #
+      # python code: convert to hex via:  hex(int("0001000000001", 2)) -> 0x201
+      #
+      # For sensor_msgs/msg/Imu, we need:
+      # Bit 0: TimeStartup, Bit 4: Qtn (quaternion), Bit 5: AngularRate, Bit 8: Accel, Bit 11: DeltaTheta
+      # Binary: 0000100100110001 = 0x0931
+      commonField: 0x0931             # IMU message fields + DeltaTheta
       timeField: 0x0000              # TIMEGROUP_NONE
-      imuField: 0x0700               # IMUGROUP_MAG | IMUGROUP_ACCEL | IMUGROUP_ANGULARRATE
+      imuField: 0x0000               # IMUGROUP_NONE
       # set gpsField directly in source to enforce or condition
       attitudeField: 0x0000          # ATTITUDEGROUP_NONE
       # set insField directly in source to enforce or condition
@@ -57,20 +95,22 @@ vectornav:
       attitudeField: 0x0000          # ATTITUDEGROUP_NONE
       insField: 0x0000               # INSGROUP_NONE
       gps2Field: 0x0000              # GPSGROUP_NONE
-    frame_id: "vectornav"
+    frame_id: "imu_link"
 
-vn_sensor_msgs:
+/**/vn_sensor_msgs:
   ros__parameters:
     use_enu: true  # this will convert from Forward-Right-Down body axes in NED to Right-Forward-Up body axes in ENU
-    orientation_covariance: [0.01,  0.0,   0.0,
-                            0.0,   0.01,  0.0,
-                            0.0,   0.0,   0.01]
-    angular_velocity_covariance: [0.01,  0.0,   0.0,
-                         0.0,   0.01,  0.0,
-                         0.0,   0.0,   0.01]
-    linear_acceleration_covariance: [0.1,  0.0,   0.0,
-                         0.0,   0.1,  0.0,
-                         0.0,   0.0,   0.1]
+    
+    orientation_covariance: [3.05e-4,  0.0,   0.0,
+                            0.0,   3.05e-4,  0.0,
+                            0.0,   0.0,   1.22e-3]
+    angular_velocity_covariance: [3.732e-07, 0.0,  0.0,
+                                 0.0,  3.732e-07, 0.0,
+                                 0.0,  0.0,  3.732e-07]
+    linear_acceleration_covariance: [0.0001886, 0.0, 0.0,
+                                    0.0, 0.0001886, 0.0,
+                                    0.0, 0.0, 0.0001886]
+    
     magnetic_covariance: [0.01,  0.0,   0.0,
                          0.0,   0.01,  0.0,
                          0.0,   0.0,   0.01]
