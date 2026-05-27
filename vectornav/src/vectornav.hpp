@@ -23,6 +23,7 @@
 #include <vectornav_msgs/msg/imu_group.hpp>
 #include <vectornav_msgs/msg/ins_group.hpp>
 #include <vectornav_msgs/msg/time_group.hpp>
+#include <vectornav_msgs/srv/set_initial_heading.hpp>
 #include "vectornav_msgs/action/mag_cal.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 
@@ -55,6 +56,9 @@ namespace vectornav {
       const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const MagCal::Goal> goal);
     rclcpp_action::CancelResponse handle_cal_cancel(const std::shared_ptr<MagCalGH> goal_handle);
     void execute_cal(const std::shared_ptr<MagCalGH> goal_handle);
+    void set_initial_heading_cb(
+      const std::shared_ptr<vectornav_msgs::srv::SetInitialHeading::Request> request,
+      std::shared_ptr<vectornav_msgs::srv::SetInitialHeading::Response> response);
     /**
     * Callback to take twist message and pass it to VN as velocity aiding 
     *
@@ -136,6 +140,7 @@ namespace vectornav {
   
     // Subscriptions
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_vel_aiding_;
+    rclcpp::Service<vectornav_msgs::srv::SetInitialHeading>::SharedPtr srv_set_initial_heading_;
 
     /// Action servers for calibration
     rclcpp_action::Server<vectornav_msgs::action::MagCal>::SharedPtr server_mag_cal_;

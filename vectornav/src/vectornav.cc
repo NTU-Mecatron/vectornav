@@ -161,6 +161,10 @@ Vectornav::Vectornav(const rclcpp::NodeOptions & options) : Node("vectornav", op
   sub_vel_aiding_ = this->create_subscription<geometry_msgs::msg::Twist>(
     "vectornav/velocity_aiding", 1, std::bind(&Vectornav::vel_aiding_cb, this, _1));
 
+  srv_set_initial_heading_ = this->create_service<vectornav_msgs::srv::SetInitialHeading>(
+    "vectornav/set_initial_heading",
+    std::bind(&Vectornav::set_initial_heading_cb, this, _1, _2));
+
   // magnetic cal action
   server_mag_cal_ = rclcpp_action::create_server<MagCal>(
     this, "vectornav/mag_cal", std::bind(&Vectornav::handle_cal_goal, this, _1, _2),
@@ -484,6 +488,29 @@ void Vectornav::vel_aiding_cb(const geometry_msgs::msg::Twist::SharedPtr msg)
     static_cast<float>(msg->linear.x), static_cast<float>(msg->linear.y),
     static_cast<float>(msg->linear.z)};
   vs_->writeVelocityCompensationMeasurement(velocity, waitForReply);
+}
+
+void Vectornav::set_initial_heading_cb(
+  const std::shared_ptr<vectornav_msgs::srv::SetInitialHeading::Request> request,
+  std::shared_ptr<vectornav_msgs::srv::SetInitialHeading::Response> response)
+{
+  if (!vs_ || !vs_->verifySensorConnectivity()) {
+    response->success = false;
+    response->message = "Sensor is not connected";
+    return;
+  }
+
+  try {
+    vs_->setInitialHeading(request->heading, true);
+    response->success = true;
+    response->message = "Initial heading set";
+  } catch (const std::exception & e) {
+    response->success = false;
+    response->message = std::string("Failed to set initial heading: ") + e.what();
+  } catch (...) {
+    response->success = false;
+    response->message = "Failed to set initial heading: unknown error";
+  }
 }
 
 /**

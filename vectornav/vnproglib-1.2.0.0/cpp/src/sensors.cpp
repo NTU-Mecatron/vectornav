@@ -954,6 +954,36 @@ void VnSensor::setGyroBias(bool waitForReply)
 	_pi->transactionNoFinalize(toSend, length, waitForReply, &response);
 }
 
+void VnSensor::setInitialHeading(float heading, bool waitForReply)
+{
+	char toSend[64];
+
+	size_t length = Packet::genSetInitialHeading(_pi->_sendErrorDetectionMode, toSend, sizeof(toSend), heading);
+
+	Packet response;
+	_pi->transactionNoFinalize(toSend, length, waitForReply, &response);
+}
+
+void VnSensor::setInitialHeading(const vec3f &ypr, bool waitForReply)
+{
+	char toSend[64];
+
+	size_t length = Packet::genSetInitialHeading(_pi->_sendErrorDetectionMode, toSend, sizeof(toSend), ypr);
+
+	Packet response;
+	_pi->transactionNoFinalize(toSend, length, waitForReply, &response);
+}
+
+void VnSensor::setInitialHeading(const vec4f &quat, bool waitForReply)
+{
+	char toSend[80];
+
+	size_t length = Packet::genSetInitialHeading(_pi->_sendErrorDetectionMode, toSend, sizeof(toSend), quat);
+
+	Packet response;
+	_pi->transactionNoFinalize(toSend, length, waitForReply, &response);
+}
+
 void VnSensor::magneticDisturbancePresent(bool disturbancePresent, bool waitForReply)
 {
 	char toSend[16];
