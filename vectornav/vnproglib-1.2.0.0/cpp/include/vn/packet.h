@@ -347,24 +347,6 @@ struct vn_proglib_DLLEXPORT Packet
 	/// \return The total number bytes in the generated command.
 	static size_t genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, float heading);
 
-	/// \brief Generates a command to set the initial heading from yaw, pitch, and roll.
-	///
-	/// \param[in] errorDetectionMode The type of error-detection to use in generating the command.
-	/// \param[in] buffer Caller provided buffer to place the generated command.
-	/// \param[in] size Number of bytes available in the provided buffer.
-	/// \param[in] ypr Yaw (x), pitch (y), and roll (z) in degrees.
-	/// \return The total number bytes in the generated command.
-	static size_t genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, vec3f ypr);
-
-	/// \brief Generates a command to set the initial heading from a quaternion.
-	///
-	/// \param[in] errorDetectionMode The type of error-detection to use in generating the command.
-	/// \param[in] buffer Caller provided buffer to place the generated command.
-	/// \param[in] size Number of bytes available in the provided buffer.
-	/// \param[in] quat Quaternion vector/scalar values (x, y, z, w).
-	/// \return The total number bytes in the generated command.
-	static size_t genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, vec4f quat);
-
 	/// \brief Generates a command to alert the sensor of a known magnetic disturbance.
 	///
 	/// \param[in] errorDetectionMode The type of error-detection to use in generating the command.

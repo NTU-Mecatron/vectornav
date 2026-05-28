@@ -903,28 +903,6 @@ size_t Packet::genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char*
 	return finalizeCommand(errorDetectionMode, buffer, length);
 }
 
-size_t Packet::genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, vec3f ypr)
-{
-	#if VN_HAVE_SECURE_CRT
-	size_t length = sprintf_s(buffer, size, "$VNSIH,%+08.3f,%+08.3f,%+08.3f", ypr.x, ypr.y, ypr.z);
-	#else
-	size_t length = sprintf(buffer, "$VNSIH,%+08.3f,%+08.3f,%+08.3f", ypr.x, ypr.y, ypr.z);
-	#endif
-
-	return finalizeCommand(errorDetectionMode, buffer, length);
-}
-
-size_t Packet::genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, vec4f quat)
-{
-	#if VN_HAVE_SECURE_CRT
-	size_t length = sprintf_s(buffer, size, "$VNSIH,%+08.3f,%+08.3f,%+08.3f,%+08.3f", quat.x, quat.y, quat.z, quat.w);
-	#else
-	size_t length = sprintf(buffer, "$VNSIH,%+08.3f,%+08.3f,%+08.3f,%+08.3f", quat.x, quat.y, quat.z, quat.w);
-	#endif
-
-	return finalizeCommand(errorDetectionMode, buffer, length);
-}
-
 size_t Packet::genKnownMagneticDisturbance(ErrorDetectionMode errorDetectionMode, char *buffer, size_t size, bool isMagneticDisturbancePresent)
 {
 	#if VN_HAVE_SECURE_CRT
