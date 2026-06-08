@@ -232,38 +232,40 @@ void VnSensorMsgs::sub_vn_common(const vectornav_msgs::msg::CommonGroup::SharedP
     pub_imu_->publish(msg);
   }
 
-  // Accel (Obtained from Delta Velocity)
+  // Delta velocity and delta angle
   {
     sensor_msgs::msg::Imu msg;
     msg.header = msg_in->header;
 
-    const double dt = msg_in->deltatheta_dtime;
-    // Prevent division by zero. Max frequency is 800Hz
-    if (dt < 1e-6) {
-        RCLCPP_WARN(get_logger(), "Delta V integration time too small. Skipping.");
-        return; 
-    }
+    // const double dt = msg_in->deltatheta_dtime;
+    // // Prevent division by zero. Max frequency is 800Hz
+    // if (dt < 1e-6) {
+    //     RCLCPP_WARN(get_logger(), "Delta V integration time too small. Skipping.");
+    //     return; 
+    // }
 
     const geometry_msgs::msg::Vector3 dvel_frd = msg_in->deltatheta_dvel;
+    const geometry_msgs::msg::Vector3 dtheta_frd = msg_in->deltatheta_dtheta;
     
     // Compute linear acceleration in FRD from delta velocity / delta time
-    geometry_msgs::msg::Vector3 accel_frd;
-    accel_frd.x = dvel_frd.x / dt;
-    accel_frd.y = dvel_frd.y / dt;
-    accel_frd.z = dvel_frd.z / dt;
+    // geometry_msgs::msg::Vector3 accel_frd;
+    // accel_frd.x = dvel_frd.x / dt;
+    // accel_frd.y = dvel_frd.y / dt;
+    // accel_frd.z = dvel_frd.z / dt;
 
     if (use_enu) {
-      convert_vec_frd_to_flu(accel_frd, msg.linear_acceleration);
+      convert_vec_frd_to_flu(dvel_frd, msg.linear_acceleration);
+      convert_vec_frd_to_flu(dtheta_frd, msg.angular_velocity);
     } else {
-      msg.linear_acceleration = accel_frd;
+      msg.linear_acceleration = dvel_frd;
+      msg.angular_velocity = dtheta_frd;
     }
 
-    fill_covariance_from_param(
-      "linear_acceleration_covariance", msg.linear_acceleration_covariance);
+    fill_covariance_from_param("linear_acceleration_covariance", msg.linear_acceleration_covariance);
+    fill_covariance_from_param("angular_velocity_covariance", msg.angular_velocity_covariance);
 
     // Ignore orientation and angular velocity  
     msg.orientation_covariance[0] = -1;
-    msg.angular_velocity_covariance[0] = -1;
 
     pub_accel_dv_->publish(msg);
   }
