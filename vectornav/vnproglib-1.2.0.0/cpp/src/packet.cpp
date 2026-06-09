@@ -892,6 +892,17 @@ size_t Packet::genTare(ErrorDetectionMode errorDetectionMode, char *buffer, size
 	return finalizeCommand(errorDetectionMode, buffer, length);
 }
 
+size_t Packet::genSetInitialHeading(ErrorDetectionMode errorDetectionMode, char* buffer, size_t size, float heading)
+{
+	#if VN_HAVE_SECURE_CRT
+	size_t length = sprintf_s(buffer, size, "$VNSIH,%+08.3f", heading);
+	#else
+	size_t length = sprintf(buffer, "$VNSIH,%+08.3f", heading);
+	#endif
+
+	return finalizeCommand(errorDetectionMode, buffer, length);
+}
+
 size_t Packet::genKnownMagneticDisturbance(ErrorDetectionMode errorDetectionMode, char *buffer, size_t size, bool isMagneticDisturbancePresent)
 {
 	#if VN_HAVE_SECURE_CRT

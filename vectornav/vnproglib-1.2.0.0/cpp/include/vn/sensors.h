@@ -279,6 +279,13 @@ public:
 	///     response from the sensor.
 	void setGyroBias(bool waitForReply = true);
 
+	/// \brief Issues a command to set the initial heading from a heading value.
+	///
+	/// \param[in] heading Initial heading in degrees.
+	/// \param[in] waitForReply Indicates if the method should wait for a
+	///     response from the sensor.
+	void setInitialHeading(float heading, bool waitForReply = true);
+
 	/// \brief Command to inform the VectorNav Sensor if there is a magnetic disturbance present.
 	///
 	/// \param[in] disturbancePresent Indicates the presence of a magnetic disturbance
