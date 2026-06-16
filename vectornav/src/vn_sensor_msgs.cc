@@ -47,7 +47,7 @@ VnSensorMsgs::VnSensorMsgs(const rclcpp::NodeOptions & options) : Node("vn_senso
     this->create_publisher<sensor_msgs::msg::TimeReference>("vectornav/time_syncin", 10);
   pub_time_pps_ = this->create_publisher<sensor_msgs::msg::TimeReference>("vectornav/time_pps", 10);
   pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("vectornav/imu", 10);
-  pub_accel_dv_ = this->create_publisher<sensor_msgs::msg::Imu>("vectornav/accel_dv", 10);
+  pub_delta_ = this->create_publisher<vectornav_msgs::msg::DeltaGroup>("vectornav/delta", 10);
   pub_gnss_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("vectornav/gnss", 10);
   pub_imu_uncompensated_ =
     this->create_publisher<sensor_msgs::msg::Imu>("vectornav/imu_uncompensated", 10);
@@ -232,40 +232,24 @@ void VnSensorMsgs::sub_vn_common(const vectornav_msgs::msg::CommonGroup::SharedP
     pub_imu_->publish(msg);
   }
 
-  // Accel (Obtained from Delta Velocity)
+  // Delta velocity and delta angle
   {
-    sensor_msgs::msg::Imu msg;
+    vectornav_msgs::msg::DeltaGroup msg;
     msg.header = msg_in->header;
-
-    const double dt = msg_in->deltatheta_dtime;
-    // Prevent division by zero. Max frequency is 800Hz
-    if (dt < 1e-6) {
-        RCLCPP_WARN(get_logger(), "Delta V integration time too small. Skipping.");
-        return; 
-    }
-
+      
     const geometry_msgs::msg::Vector3 dvel_frd = msg_in->deltatheta_dvel;
-    
-    // Compute linear acceleration in FRD from delta velocity / delta time
-    geometry_msgs::msg::Vector3 accel_frd;
-    accel_frd.x = dvel_frd.x / dt;
-    accel_frd.y = dvel_frd.y / dt;
-    accel_frd.z = dvel_frd.z / dt;
+    const geometry_msgs::msg::Vector3 dtheta_frd = msg_in->deltatheta_dtheta;
 
     if (use_enu) {
-      convert_vec_frd_to_flu(accel_frd, msg.linear_acceleration);
+      convert_vec_frd_to_flu(dvel_frd, msg.deltatheta_dvel);
+      convert_vec_frd_to_flu(dtheta_frd, msg.deltatheta_dtheta);
     } else {
-      msg.linear_acceleration = accel_frd;
+      msg.deltatheta_dvel = dvel_frd;
+      msg.deltatheta_dtheta = dtheta_frd;
     }
 
-    fill_covariance_from_param(
-      "linear_acceleration_covariance", msg.linear_acceleration_covariance);
-
-    // Ignore orientation and angular velocity  
-    msg.orientation_covariance[0] = -1;
-    msg.angular_velocity_covariance[0] = -1;
-
-    pub_accel_dv_->publish(msg);
+    msg.deltatheta_dtime = msg_in->deltatheta_dtime;
+    pub_delta_->publish(msg);
   }
 
   // IMU (Uncompensated)
